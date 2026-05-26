@@ -2,6 +2,8 @@
 
 AI-powered B2B lead generation for IT staffing. Finds companies actively hiring software engineers, data engineers, DevOps, and ML engineers in NY/NJ — your potential staffing clients.
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/techteampeer/lead-gen)
+
 **Live dashboard →** https://techteampeer.github.io/lead-gen/
 
 ---

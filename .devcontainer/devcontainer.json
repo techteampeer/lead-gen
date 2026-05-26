@@ -1,0 +1,31 @@
+{
+  "name": "Lead Gen Pipeline",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+
+  // Auto-install everything when the Codespace starts
+  "postCreateCommand": "pip install -r requirements.txt && playwright install chromium --with-deps",
+
+  // Extensions auto-installed in VS Code
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.pylance",
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": false
+      }
+    }
+  },
+
+  // Forward port so the dashboard is accessible in the browser
+  "forwardPorts": [8765],
+  "portsAttributes": {
+    "8765": {
+      "label": "Lead Gen Dashboard",
+      "onAutoForward": "openBrowserOnce"
+    }
+  }
+}
