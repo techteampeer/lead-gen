@@ -1,0 +1,64 @@
+{
+  "target_locations": ["new york", "ny", "new jersey", "nj", "remote"],
+
+  "it_keywords": [
+    "software engineer", "backend engineer", "frontend engineer", "full stack engineer",
+    "data engineer", "devops engineer", "ml engineer", "machine learning engineer",
+    "cloud engineer", "platform engineer", "infrastructure engineer",
+    "site reliability engineer", "sre", "security engineer", "senior engineer",
+    "staff engineer", "principal engineer", "data scientist", "ai engineer",
+    "solutions architect", "software developer", "python developer",
+    "golang engineer", "rust engineer", "systems engineer", "analytics engineer",
+    "database engineer", "mobile engineer", "ios engineer", "android engineer"
+  ],
+
+  "disqualify_keywords": [
+    "help desk", "it support", "technical support", "network admin", "system admin",
+    "systems administrator", "break/fix", "break fix", "desktop support",
+    "field technician", "it technician", "noc engineer", "network operations"
+  ],
+
+  "niche_stack_keywords": [
+    "rust", "golang", "kubernetes", "k8s", "machine learning", "llm",
+    "large language model", "distributed systems", "kafka", "apache spark",
+    "apache flink", "terraform", "pulumi", "grpc", "webassembly", "wasm",
+    "ebpf", "mlops", "pytorch", "clickhouse", "cockroachdb"
+  ],
+
+  "urgency_keywords": [
+    "asap", "immediate", "immediately", "scaling", "urgent", "urgently",
+    "growing fast", "fast-growing", "rapid growth", "hypergrowth", "hiring now"
+  ],
+
+  "funded_stage_keywords": [
+    "series b", "series c", "series d", "series e", "ipo", "publicly traded",
+    "nasdaq", "nyse", "pre-ipo", "recently funded", "just raised"
+  ],
+
+  "known_funded_companies": [
+    "stripe", "databricks", "figma", "cloudflare", "notion", "airtable",
+    "hashicorp", "elastic", "intercom", "snyk", "pagerduty", "mixpanel",
+    "segment", "auth0", "retool", "supabase", "vercel", "launchdarkly",
+    "zapier", "typeform", "postman", "replit"
+  ],
+
+  "enterprise_blocklist": [
+    "JPMorgan", "JP Morgan", "Morgan Stanley", "Goldman Sachs", "Citibank", "Citi",
+    "Bank of America", "Wells Fargo", "Barclays", "Deutsche Bank", "HSBC",
+    "IBM", "Accenture", "Deloitte", "PwC", "KPMG", "EY", "McKinsey",
+    "Cognizant", "Infosys", "TCS", "Tata Consultancy", "Wipro", "HCL",
+    "Amazon", "Microsoft", "Google", "Apple", "Meta", "Netflix",
+    "Oracle", "SAP", "Salesforce", "ServiceNow",
+    "Lockheed Martin", "Raytheon", "General Dynamics", "Booz Allen"
+  ],
+
+  "disable_recent_check": true,
+
+  "max_jobs_per_board": 25,
+  "dice_pages": 3,
+  "otta_pages": 3,
+  "discovery_max_per_run": 60,
+  "scraper_delay_seconds": 1,
+  "request_timeout": 10,
+  "max_description_chars": 1000
+}
