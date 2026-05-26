@@ -15,11 +15,15 @@ permissions:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -31,15 +35,11 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install Playwright browsers
+        if: ${{ !inputs.skip_browser }}
         run: playwright install chromium --with-deps
 
       - name: "[1/2] Run pipeline (scrape → filter → rollup)"
-        run: |
-          if [ "${{ inputs.skip_browser }}" = "true" ]; then
-            python run_pipeline.py --skip-browser
-          else
-            python run_pipeline.py
-          fi
+        run: python run_pipeline.py ${{ inputs.skip_browser && '--skip-browser' || '' }}
 
       - name: "[2/2] Score + rebuild dashboard"
         run: python rebuild_dashboard.py
@@ -51,4 +51,4 @@ jobs:
           git add data/ dashboard.html
           git diff --staged --quiet && echo "Nothing changed — skipping commit" || \
             git commit -m "pipeline: update leads $(date -u '+%Y-%m-%d %H:%M UTC')"
-          git push
+          git push origin HEAD
