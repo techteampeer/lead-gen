@@ -1,136 +1,99 @@
 # IT Staffing Lead Gen Pipeline
 
-Automated B2B lead generation for IT staffing — scrapes job boards nightly, filters noise, scores by quality, and delivers a ranked dashboard for your sales team.
+AI-powered B2B lead generation for IT staffing. Finds companies actively hiring software engineers, data engineers, DevOps, and ML engineers in NY/NJ — your potential staffing clients.
+
+**Live dashboard →** https://techteampeer.github.io/lead-gen/
 
 ---
 
-## How to Run
+## Quick Start
 
-### First time setup
+### Run in the cloud (no setup)
+1. Go to [GitHub Actions](https://github.com/techteampeer/lead-gen/actions)
+2. Click **"Run Lead Gen Pipeline"** → **"Run workflow"**
+3. Watch live logs → dashboard updates automatically
+
+### Run locally on Mac
+See **[SETUP.md](SETUP.md)** for the full step-by-step guide.
+
 ```bash
-pip install requests beautifulsoup4
+git clone https://github.com/techteampeer/lead-gen.git
+cd lead-gen
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt && playwright install chromium
+python run_pipeline.py && python rebuild_dashboard.py
+python -m http.server 8765   # → open http://localhost:8765/dashboard.html
 ```
 
-### Run the full pipeline
-**Windows:** Double-click `run.bat`
+---
 
-**Command line:**
-```bash
-python scraper.py    # ~3-5 min  → data/raw_jobs.csv
-python filters.py   # ~1 min    → data/qualified_jobs.csv
-python scorer.py    # ~1 min    → data/leads_scored.csv + dashboard.html
+## How It Works
+
+```
+Dice.com (Playwright)  ─┐
+Wellfound              ─┤
+Greenhouse API         ─┼─→  run_pipeline.py  →  data/companies_to_research.json
+Lever API              ─┤
+Ashby API              ─┘
+                                    ↓
+                          rebuild_dashboard.py
+                                    ↓
+                             dashboard.html  →  GitHub Pages
 ```
 
-Then open `dashboard.html` in any browser.
-
----
-
-## What Each File Does
-
-| File | Role |
-|------|------|
-| `scraper.py` | Scrapes 5 job sources → `data/raw_jobs.csv` |
-| `filters.py` | Applies 6 discard filters + 30-day dedup → `data/qualified_jobs.csv` |
-| `scorer.py` | Scores 0-100, ranks leads, generates dashboard → `data/leads_scored.csv` + `dashboard.html` |
-| `dashboard.html` | Self-contained sales dashboard (auto-generated, no backend) |
-| `config.json` | All tunable settings (locations, keywords, Greenhouse boards) |
-
----
-
-## Job Sources
-
-| Source | Method | Target jobs/night |
-|--------|--------|-------------------|
-| Greenhouse | JSON API (no auth) | 80-150 |
-| Remotive | JSON API (no auth) | 50-80 |
-| Builtin NYC | HTML scrape | 50-80 |
-| Dice.com | HTML scrape | 30-50 |
-| Indeed | HTML scrape (best-effort) | 20-50 |
+1. **Scrape** — discovers companies actively hiring IT talent in NY/NJ
+2. **Filter** — removes staffing firms, non-IT roles, already-contacted companies
+3. **Score** — ranks 0-100 based on job signals + company signals
+4. **Dashboard** — self-contained HTML, sortable/filterable by score and urgency
 
 ---
 
 ## Scoring (0-100)
 
-**Job signals (0-60):** Senior/Staff title +15 | Niche stack (Rust/Go/K8s/ML) +12 | Age 14-60 days +10 | 3+ open roles at company +15 | Urgency language +8
+| Signal | Points |
+|--------|--------|
+| Senior/Staff title | +15 |
+| Niche stack (K8s, ML, Go, Rust…) | +12 |
+| 3+ open IT roles at company | +15 |
+| Urgency language in posting | +8 |
+| Posted 14-60 days ago | +10 |
+| Series B+ funded | +15 |
+| 50-500 employees | +10 |
+| NY/NJ location | +8 |
+| No internal TA team | +7 |
+| Tech/fintech/biotech industry | +5 |
 
-**Company signals (0-40):** Series B+ funded +15 | 50-500 employees +10 | NY/NJ location +8 | No internal TA team +7 | Tech industry +5
-
-**Urgency:**
-- **HIGH** — posted ≤21 days + strong signals
-- **MEDIUM** — posted ≤60 days + at least one signal
-- **LOW** — older or weak signals
-
----
-
-## Dashboard Features
-
-- Sort by any column (click header)
-- Filter by score threshold (slider) and urgency (dropdown)
-- Color coded: green (80+), yellow (70-79), gray (<70)
-- **LI** button — opens company LinkedIn jobs page
-- **CB** button — opens Crunchbase profile
-- **📋** button — copies a pre-written outreach pitch for that lead
-- **○/✓** button — marks as contacted (persists across sessions via localStorage)
+**Urgency:** HIGH = score ≥ 70 · MEDIUM = 40-69 · LOW = < 40
 
 ---
 
-## Auto-Discard Filters (filters.py)
+## Target Market
 
-Applied in order — a job is discarded at the first match:
-
-1. Posting age > 90 days
-2. Location not in NY, NJ, or Remote
-3. Title contains help desk / IT support / network admin / etc.
-4. Description contains "no agencies" / "no recruiters" / "no staffing"
-5. Generic title (just "Engineer" or "Developer" with no specialisation)
-6. Company already contacted in the last 30 days (tracked in `data/recent_companies.json`)
+- **Geography:** New York, New Jersey, Remote (US)
+- **Roles:** Software Engineers, Data Engineers, DevOps, ML Engineers, Platform Engineers, SREs, Cloud Engineers, AI Engineers, Solutions Architects
+- **Sweet spot:** Series B+ · 50-500 employees · no internal TA team · tech/fintech/biotech
 
 ---
 
-## Nightly Automation (Windows Task Scheduler)
+## Key Files
 
-1. Open **Task Scheduler** → Create Basic Task
-2. Name: `Lead Gen Pipeline`
-3. Trigger: **Daily** at **11:00 PM**
-4. Action: **Start a program**
-   - Program: `C:\path\to\lead_gen\run.bat`
-   - Start in: `C:\path\to\lead_gen\`
-5. Finish → Enable
-
-Sales team opens `dashboard.html` each morning at 8 AM.
-
----
-
-## Tuning config.json
-
-| Key | What to change |
-|-----|----------------|
-| `greenhouse_boards` | Add/remove company slugs |
-| `niche_stack_keywords` | Add tech terms relevant to your clients |
-| `disqualify_keywords` | Add more noise titles to discard |
-| `max_jobs_per_board` | Raise if you want more Greenhouse jobs (slower) |
-| `scraper_delay_seconds` | Increase if getting rate-limited |
+| File | Purpose |
+|------|---------|
+| `run_pipeline.py` | Main entry point — runs all scrapers |
+| `rebuild_dashboard.py` | Rebuilds dashboard.html from scored data |
+| `config.json` | Keywords, company lists, tunable settings |
+| `dashboard.html` | Auto-generated sales dashboard |
+| `data/recent_companies.json` | 30-day contacted-company memory ⚠️ never delete |
+| `.github/workflows/pipeline.yml` | GitHub Actions cloud workflow |
 
 ---
 
-## File Structure
+## Data Files
 
-```
-lead_gen/
-├── scraper.py
-├── filters.py
-├── scorer.py
-├── dashboard.html          ← auto-generated by scorer.py
-├── config.json
-├── .env
-├── run.bat                 ← Windows: double-click to run all
-├── data/
-│   ├── raw_jobs.csv        ← scraper output
-│   ├── qualified_jobs.csv  ← filter output
-│   ├── leads_scored.csv    ← scorer output
-│   └── recent_companies.json  ← 30-day dedup memory
-└── logs/
-    ├── scraper.log
-    ├── filters.log
-    └── scorer.log
-```
+| File | Contents |
+|------|---------|
+| `data/companies_to_research.json` | Unique companies with open roles (pipeline output) |
+| `data/leads_scored.csv` | Scored + ranked leads (feeds dashboard) |
+| `data/qualified_jobs.csv` | Jobs that passed all filters |
+| `data/discovered_boards.json` | Auto-discovered Greenhouse/Lever/Ashby boards |
+| `data/recent_companies.json` | Companies contacted in last 30 days |
