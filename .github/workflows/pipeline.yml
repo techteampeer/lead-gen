@@ -1,0 +1,54 @@
+name: Run Lead Gen Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_browser:
+        description: 'Skip Playwright/Dice scraping (uses cached Dice data — faster)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: "[1/2] Run pipeline (scrape → filter → rollup)"
+        run: |
+          if [ "${{ inputs.skip_browser }}" = "true" ]; then
+            python run_pipeline.py --skip-browser
+          else
+            python run_pipeline.py
+          fi
+
+      - name: "[2/2] Score + rebuild dashboard"
+        run: python rebuild_dashboard.py
+
+      - name: Commit results back to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ dashboard.html
+          git diff --staged --quiet && echo "Nothing changed — skipping commit" || \
+            git commit -m "pipeline: update leads $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
